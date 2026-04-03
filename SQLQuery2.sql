@@ -61,6 +61,7 @@ CREATE TABLE work(
 );
 
 --SELECT 1
+
 SELECT 
     f.faculty_name,
     AVG(CAST(s.exm AS FLOAT)) AS AvgeExam
@@ -76,6 +77,7 @@ JOIN faculty f ON t.faculty_id = f.id
 GROUP BY f.faculty_name;
 
 --SELECT 2
+
 SELECT 
     f.faculty_name AS Факультет,
     h.cours AS Курс,
@@ -95,6 +97,7 @@ ORDER BY
     f.faculty_name, h.cours;
 
 --SELECT 3
+
 SELECT 
     f.faculty_name AS Факультет,
     AVG(CAST(s.exm AS FLOAT)) AS Общий_средний_балл
@@ -111,7 +114,6 @@ GROUP BY
     f.faculty_name
 HAVING 
     AVG(CAST(s.exm AS FLOAT)) > 7;  
-
 
 --SELECT 4
 
@@ -215,6 +217,7 @@ ORDER BY
     f.faculty_name, h.cours, fm.form_name;
 
 --SELECT 9
+
 SELECT 
     t.last_name AS Фамилия,
     t.f_name AS Имя,
@@ -229,8 +232,6 @@ GROUP BY
     t.id, t.last_name, t.f_name, t.s_name
 ORDER BY 
     Количество_предметов DESC, t.last_name;
-
-
 
 --SELECT 10
 
@@ -248,6 +249,7 @@ GROUP BY
     f.faculty_name;
 
 --SELECT 11
+
 SELECT 
     s.subj AS Предмет,
     MAX(s.[hours]) AS Максимальное_количество_часов
@@ -259,6 +261,7 @@ ORDER BY
     s.subj;
 
 --SELECT 12
+
 SELECT 
     t.last_name AS Фамилия, 
     t.f_name AS Имя
@@ -271,7 +274,9 @@ GROUP BY
     t.id, t.last_name, t.f_name 
 HAVING 
     COUNT(DISTINCT w.subj_id) > 1; 
+
 --SELECT 13
+
 SELECT 
     f.faculty_name AS Факультет, 
     h.cours AS Курс, 
@@ -283,8 +288,10 @@ WHERE
     f.id = h.faculty_id  
 GROUP BY 
     f.faculty_name,       
-    h.cours;              
+    h.cours;   
+    
 --SELECT 14
+
 SELECT 
     f.faculty_name AS Факультет,
     COUNT(DISTINCT w.subj_id) AS Количество_предметов
@@ -298,8 +305,10 @@ WHERE
 GROUP BY 
     f.faculty_name
 ORDER BY 
-    f.faculty_name;    
+    f.faculty_name; 
+    
 --SELECT 15
+
 SELECT 
     f.faculty_name AS Факультет, 
     COUNT(DISTINCT w.subj_id) AS Количество_предметов
@@ -358,3 +367,15 @@ JOIN HOURS ON PROCESS.hours_id = HOURS.id
 JOIN FACULTY ON HOURS.faculty_id = FACULTY.id
 JOIN FORM ON HOURS.form_id = FORM.id
 WHERE STUD.last_name IS NULL OR STUD.last_name = ''
+
+--JOIN 6
+--JOIN 7
+--JOIN 8 
+--JOIN 9
+--JOIN 10
+--JOIN 11 
+--JOIN 12 
+--JOIN 13
+--JOIN 14
+--JOIN 15
+--JOIN 16
