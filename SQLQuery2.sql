@@ -1,0 +1,360 @@
+CREATE DATABASE hico69_laba3
+
+USE hico69_laba3
+
+
+CREATE TABLE faculty(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    faculty_name NVARCHAR(50)
+);
+
+CREATE TABLE form(
+    id INT IDENTITY(1,1) PRIMARY KEY, 
+    form_name NVARCHAR(30)
+);
+
+CREATE TABLE stud(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    last_name NVARCHAR(30),
+    f_name NVARCHAR(30),
+    s_name NVARCHAR(30),
+    br_date DATE,
+    in_date DATE,
+    exm INT 
+);
+
+CREATE TABLE teach(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    last_name NVARCHAR(30),
+    f_name NVARCHAR(30),
+    s_name NVARCHAR(30),
+    br_date DATE,
+    start_work_date DATE
+);
+
+CREATE TABLE subj(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    subj NVARCHAR(100),
+    [hours] INT
+);
+
+CREATE TABLE [hours](
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    cours INT,
+    faculty_id INT FOREIGN KEY REFERENCES faculty(id),
+    form_id INT FOREIGN KEY REFERENCES form(id),   
+    all_h INT,
+    inclass_h INT
+);
+
+CREATE TABLE process(
+    stud_id INT FOREIGN KEY REFERENCES stud(id),   
+    hours_id INT FOREIGN KEY REFERENCES [hours](id),
+    PRIMARY KEY (stud_id, hours_id) 
+);
+
+CREATE TABLE work(
+    teach_id INT FOREIGN KEY REFERENCES teach(id),
+    subj_id INT FOREIGN KEY REFERENCES subj(id),
+    hours_id INT FOREIGN KEY REFERENCES [hours](id),
+    PRIMARY KEY (teach_id, subj_id, hours_id)
+);
+
+--SELECT 1
+SELECT 
+    f.faculty_name,
+    AVG(CAST(s.exm AS FLOAT)) AS AvgeExam
+FROM stud s
+JOIN (
+    SELECT p.stud_id, h.faculty_id
+    FROM process p
+    JOIN [hours] h ON p.hours_id = h.id
+    JOIN form fm ON h.form_id = fm.id
+    WHERE fm.form_name = 'заочная'
+) AS t ON s.id = t.stud_id
+JOIN faculty f ON t.faculty_id = f.id
+GROUP BY f.faculty_name;
+
+--SELECT 2
+SELECT 
+    f.faculty_name AS Факультет,
+    h.cours AS Курс,
+    MAX(s.exm) AS Макс_средний_балл
+FROM 
+    stud s, 
+    process p, 
+    [hours] h, 
+    faculty f
+WHERE 
+    s.id = p.stud_id                
+    AND p.hours_id = h.id           
+    AND h.faculty_id = f.id         
+GROUP BY 
+    f.faculty_name, h.cours
+ORDER BY 
+    f.faculty_name, h.cours;
+
+--SELECT 3
+SELECT 
+    f.faculty_name AS Факультет,
+    AVG(CAST(s.exm AS FLOAT)) AS Общий_средний_балл
+FROM 
+    stud s, 
+    process p, 
+    [hours] h, 
+    faculty f
+WHERE 
+    s.id = p.stud_id               
+    AND p.hours_id = h.id           
+    AND h.faculty_id = f.id         
+GROUP BY 
+    f.faculty_name
+HAVING 
+    AVG(CAST(s.exm AS FLOAT)) > 7;  
+
+
+--SELECT 4
+
+SELECT 
+    h.cours AS Курс,
+    f.faculty_name AS Факультет,
+    fm.form_name AS Форма_обучения,
+    AVG(CAST(s.exm AS FLOAT)) AS Средний_балл
+FROM 
+    stud s, 
+    process p, 
+    [hours] h, 
+    faculty f, 
+    form fm
+WHERE 
+    s.id = p.stud_id              
+    AND p.hours_id = h.id      
+    AND h.faculty_id = f.id     
+    AND h.form_id = fm.id         
+GROUP BY 
+    h.cours, 
+    f.faculty_name, 
+    fm.form_name
+HAVING 
+    AVG(CAST(s.exm AS FLOAT)) > 7.5;
+
+--SELECT 5
+
+SELECT 
+    f.faculty_name AS Факультет,
+    h.cours AS Курс,
+    MIN(s.exm) AS Мин_средний_балл
+FROM 
+    stud s, 
+    process p, 
+    [hours] h, 
+    faculty f
+WHERE 
+    s.id = p.stud_id                
+    AND p.hours_id = h.id           
+    AND h.faculty_id = f.id         
+GROUP BY 
+    f.faculty_name, h.cours
+ORDER BY 
+    f.faculty_name, h.cours;
+--SELECT 6
+
+SELECT 
+    f.faculty_name AS Факультет,
+    fm.form_name AS Форма_обучения,
+    MIN(s.exm) AS Мин_средний_балл
+FROM 
+    stud s, 
+    process p, 
+    [hours] h, 
+    faculty f,
+    form fm
+WHERE 
+    s.id = p.stud_id                
+    AND p.hours_id = h.id           
+    AND h.faculty_id = f.id
+    AND h.form_id = fm.id
+GROUP BY 
+    f.faculty_name, fm.form_name
+HAVING 
+    MIN(s.exm) > 6
+ORDER BY 
+    f.faculty_name, fm.form_name;
+
+--SELECT 7
+
+SELECT 
+    (h.all_h - h.inclass_h) AS Самостоятельная_подготовка_часов
+FROM 
+    [hours] h, 
+    faculty f, 
+    form fm
+WHERE 
+    h.faculty_id = f.id           
+    AND h.form_id = fm.id         
+    AND f.faculty_name = N'ФПК'    
+    AND h.cours = 3               
+    AND fm.form_name = N'Заочная';
+
+--SELECT 8
+
+SELECT 
+    f.faculty_name AS Факультет,
+    h.cours AS Курс,
+    fm.form_name AS Форма_обучения,
+    (h.all_h - h.inclass_h) AS Самостоятельные_часы
+FROM 
+    [hours] h,
+    faculty f,
+    form fm
+WHERE 
+    h.faculty_id = f.id
+    AND h.form_id = fm.id
+    AND (h.all_h - h.inclass_h) = 150
+ORDER BY 
+    f.faculty_name, h.cours, fm.form_name;
+
+--SELECT 9
+SELECT 
+    t.last_name AS Фамилия,
+    t.f_name AS Имя,
+    t.s_name AS Отчество,
+    COUNT(w.subj_id) AS Количество_предметов
+FROM 
+    teach t,
+    work w
+WHERE 
+    t.id = w.teach_id
+GROUP BY 
+    t.id, t.last_name, t.f_name, t.s_name
+ORDER BY 
+    Количество_предметов DESC, t.last_name;
+
+
+
+--SELECT 10
+
+SELECT 
+    f.faculty_name AS Факультет,
+    COUNT(DISTINCT w.teach_id) AS Количество_преподавателей
+FROM 
+    faculty f, 
+    [hours] h, 
+    work w
+WHERE 
+    f.id = h.faculty_id      
+    AND h.id = w.hours_id   
+GROUP BY 
+    f.faculty_name;
+
+--SELECT 11
+SELECT 
+    s.subj AS Предмет,
+    MAX(s.[hours]) AS Максимальное_количество_часов
+FROM 
+    subj s
+GROUP BY 
+    s.subj
+ORDER BY 
+    s.subj;
+
+--SELECT 12
+SELECT 
+    t.last_name AS Фамилия, 
+    t.f_name AS Имя
+FROM 
+    teach t, 
+    work w
+WHERE 
+    t.id = w.teach_id          
+GROUP BY 
+    t.id, t.last_name, t.f_name 
+HAVING 
+    COUNT(DISTINCT w.subj_id) > 1; 
+--SELECT 13
+SELECT 
+    f.faculty_name AS Факультет, 
+    h.cours AS Курс, 
+    SUM(h.all_h) AS Всего_часов
+FROM 
+    faculty f, 
+    [hours] h
+WHERE 
+    f.id = h.faculty_id  
+GROUP BY 
+    f.faculty_name,       
+    h.cours;              
+--SELECT 14
+SELECT 
+    f.faculty_name AS Факультет,
+    COUNT(DISTINCT w.subj_id) AS Количество_предметов
+FROM 
+    faculty f
+    INNER JOIN [hours] h ON f.id = h.faculty_id
+    INNER JOIN work w ON h.id = w.hours_id
+    INNER JOIN teach t ON w.teach_id = t.id
+WHERE 
+    (t.s_name IS NULL OR t.s_name = '')
+GROUP BY 
+    f.faculty_name
+ORDER BY 
+    f.faculty_name;    
+--SELECT 15
+SELECT 
+    f.faculty_name AS Факультет, 
+    COUNT(DISTINCT w.subj_id) AS Количество_предметов
+FROM 
+    faculty f, 
+    [hours] h, 
+    work w, 
+    teach t
+WHERE 
+    f.id = h.faculty_id            
+    AND h.id = w.hours_id            
+    AND w.teach_id = t.id            
+    AND (t.s_name IS NULL OR t.s_name = '') 
+GROUP BY 
+    f.faculty_name;
+
+
+--JOIN 1
+
+SELECT STUD.f_name, STUD.last_name, STUD.s_name, STUD.br_date, STUD.in_date, STUD.exm, [hours].cours, FACULTY.faculty_name FROM PROCESS 
+JOIN STUD ON PROCESS.stud_id = STUD.id
+JOIN HOURS ON PROCESS.hours_id = HOURS.id
+JOIN FACULTY ON HOURS.faculty_id = FACULTY.id
+JOIN FORM ON HOURS.form_id = FORM.id
+WHERE FORM.form_name='Заочная' AND (DATEDIFF(YEAR, STUD.br_date, GETDATE()) < 37)
+
+--JOIN 2
+
+SELECT FACULTY.id, FACULTY.faculty_name, COUNT(STUD.id) FROM FACULTY 
+JOIN HOURS ON FACULTY.id = HOURS.faculty_id
+JOIN PROCESS ON HOURS.id = PROCESS.hours_id
+JOIN STUD ON PROCESS.stud_id = STUD.id
+GROUP BY FACULTY.id, FACULTY.faculty_name
+
+--JOIN 3
+
+SELECT FORM.id, FORM.form_name, COUNT(STUD.id) FROM FORM
+JOIN HOURS ON FORM.id = HOURS.form_id
+JOIN PROCESS ON HOURS.id = PROCESS.hours_id
+JOIN STUD ON PROCESS.stud_id = STUD.id
+GROUP BY FORM.id, FORM.form_name
+
+--JOIN 4 
+
+SELECT FACULTY.id, FACULTY.faculty_name, AVG(DATEDIFF(YEAR, STUD.br_date, GETDATE())) FROM FACULTY
+JOIN HOURS ON FACULTY.id = HOURS.faculty_id
+JOIN PROCESS ON HOURS.id = PROCESS.hours_id
+JOIN STUD ON PROCESS.stud_id = STUD.id
+GROUP BY FACULTY.id, FACULTY.faculty_name;
+
+--JOIN 5 
+
+SELECT STUD.f_name, STUD.last_name, STUD.s_name, STUD.in_date, [hours].cours, FACULTY.faculty_name, FORM.form_name FROM PROCESS
+JOIN STUD ON PROCESS.stud_id = STUD.id
+JOIN HOURS ON PROCESS.hours_id = HOURS.id
+JOIN FACULTY ON HOURS.faculty_id = FACULTY.id
+JOIN FORM ON HOURS.form_id = FORM.id
+WHERE STUD.last_name IS NULL OR STUD.last_name = ''
