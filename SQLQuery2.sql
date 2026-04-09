@@ -385,7 +385,6 @@ WHERE
 GROUP BY 
     f.faculty_name;
 
-
 --JOIN 1
 
 SELECT STUD.f_name, STUD.last_name, STUD.s_name, STUD.br_date, STUD.in_date, STUD.exm, [hours].cours, FACULTY.faculty_name FROM PROCESS 
@@ -555,7 +554,95 @@ JOIN process p ON h.id = p.hours_id GROUP BY faculty_id ORDER BY COUNT(DISTINCT 
 );
 
 --SUBQUERY 4
+
+SELECT DISTINCT s.last_name, s.f_name, s.s_name, f.faculty_name, fo.form_name, h.cours FROM stud s
+JOIN process p ON s.id = p.stud_id
+JOIN [hours] h ON p.hours_id = h.id
+JOIN faculty f ON h.faculty_id = f.id
+JOIN form fo ON h.form_id = fo.id
+INNER JOIN (
+    SELECT h2.faculty_id, h2.form_id, h2.cours FROM stud s2
+    JOIN process p2 ON s2.id = p2.stud_id
+    JOIN [hours] h2 ON p2.hours_id = h2.id
+    GROUP BY h2.faculty_id, h2.form_id, h2.cours
+    HAVING COUNT(CASE WHEN s2.s_name IS NULL OR s2.s_name = '' THEN 1 END) = 0
+) AS ValidGroups ON 
+    h.faculty_id = ValidGroups.faculty_id AND 
+    h.form_id = ValidGroups.form_id AND 
+    h.cours = ValidGroups.cours;
+
 --SUBQUERY 5
+
+SELECT DISTINCT s.last_name, s.f_name, s.s_name, f.faculty_name, fo.form_name, h.cours
+FROM stud s
+JOIN process p ON s.id = p.stud_id
+JOIN [hours] h ON p.hours_id = h.id
+JOIN faculty f ON h.faculty_id = f.id
+JOIN form fo ON h.form_id = fo.id
+WHERE h.cours IN (
+    SELECT h2.cours 
+    FROM [hours] h2
+    JOIN process p2 ON h2.id = p2.hours_id
+    JOIN stud s2 ON p2.stud_id = s2.id
+    WHERE s2.last_name = N'Ботяновский'
+)
+AND s.last_name <> N'Ботяновский'
+ORDER BY h.cours, s.last_name;
+
 --SUBQUERY 6
+
+SELECT DISTINCT s.last_name, s.f_name, s.s_name, f.faculty_name, fo.form_name, h.cours
+FROM stud s
+JOIN process p ON s.id = p.stud_id
+JOIN [hours] h ON p.hours_id = h.id
+JOIN faculty f ON h.faculty_id = f.id
+JOIN form fo ON h.form_id = fo.id
+WHERE h.cours IN (
+    SELECT h2.cours 
+    FROM [hours] h2
+    JOIN process p2 ON h2.id = p2.hours_id
+    JOIN stud s2 ON p2.stud_id = s2.id
+    WHERE s2.last_name IN (N'Зингель', N'Зайцева')
+)
+AND s.last_name NOT IN (N'Зингель', N'Зайцева')
+ORDER BY h.cours, s.last_name;
+
 --SUBQUERY 7
+
+SELECT last_name, f_name, faculty_name, cours FROM stud
+JOIN process ON stud.id = process.stud_id
+JOIN [hours] ON process.hours_id = [hours].id
+JOIN faculty ON [hours].faculty_id = faculty.id
+WHERE (s_name IS NULL OR s_name = '') 
+  AND hours_id IN (
+      SELECT hours_id 
+      FROM stud 
+      JOIN process ON stud.id = process.stud_id
+      WHERE s_name IS NULL OR s_name = ''
+      GROUP BY hours_id
+      HAVING COUNT(*) > 1
+  );
+
 --SUBQUERY 8
+
+SELECT s.last_name, s.f_name, f.faculty_name, h.cours, t.total_count FROM stud s
+JOIN process p ON s.id = p.stud_id
+JOIN [hours] h ON p.hours_id = h.id
+JOIN faculty f ON h.faculty_id = f.id
+JOIN (
+    SELECT h2.faculty_id, h2.cours, COUNT(DISTINCT p2.stud_id) total_count FROM process p2
+    JOIN [hours] h2 ON p2.hours_id = h2.id
+    GROUP BY h2.faculty_id, h2.cours
+) t ON h.faculty_id = t.faculty_id AND h.cours = t.cours
+WHERE s.s_name IS NULL OR s.s_name = ''
+GROUP BY s.last_name, s.f_name, f.faculty_name, h.cours, t.total_count;
+
+--PROCEDURE 1
+
+
+--PROCEDURE 2
+
+
+--PROCEDURE 3
+
+
