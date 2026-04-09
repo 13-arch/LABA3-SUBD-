@@ -646,3 +646,15 @@ GROUP BY s.last_name, s.f_name, f.faculty_name, h.cours, t.total_count;
 --PROCEDURE 3
 
 
+
+--FUNCTION 1
+--FUNCTION 2
+
+--VIEW 1
+--VIEW 2
+
+--UNION 1
+--UNION 2
+--UNION 3
+--UNION 4
+--UNION 5
